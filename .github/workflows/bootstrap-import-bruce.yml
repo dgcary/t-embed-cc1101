@@ -1,0 +1,59 @@
+name: Bootstrap Bruce 1.16.1 baseline
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  import-upstream:
+    if: github.event.issue.title == '[bootstrap] import Bruce 1.16.1'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target baseline branch
+        uses: actions/checkout@v4
+        with:
+          ref: baseline/bruce-1.16.1
+          fetch-depth: 0
+
+      - name: Checkout Bruce 1.16.1
+        uses: actions/checkout@v4
+        with:
+          repository: BruceDevices/firmware
+          ref: 1.16.1
+          path: upstream-src
+          fetch-depth: 1
+
+      - name: Verify exact upstream commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='ba519c936c87b89c9c667c15b932d7faca5360d5'
+          actual="$(git -C upstream-src rev-parse HEAD)"
+          echo "Expected upstream: $expected"
+          echo "Actual upstream:   $actual"
+          test "$actual" = "$expected"
+
+      - name: Replace baseline tree with upstream source
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_dir="$(mktemp -d)"
+          rsync -a --delete --exclude='.git' upstream-src/ "$temp_dir/"
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          rsync -a "$temp_dir/" ./
+          rm -rf "$temp_dir"
+
+      - name: Commit exact source baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No changes to commit'; exit 1; }
+          git commit -m 'chore: import Bruce 1.16.1 upstream baseline'
+          git push origin HEAD:baseline/bruce-1.16.1
