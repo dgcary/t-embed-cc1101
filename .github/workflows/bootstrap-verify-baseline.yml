@@ -1,0 +1,32 @@
+name: Verify Bruce baseline build
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event.issue.title == '[bootstrap] verify Bruce 1.16.1 baseline'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout baseline
+        uses: actions/checkout@v4
+        with:
+          ref: baseline/bruce-1.16.1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-multilib libc6-dev-i386
+          pip install platformio requests esptool intelhex
+
+      - name: Build T-Embed CC1101
+        run: platformio run -e lilygo-t-embed-cc1101
