@@ -3,13 +3,17 @@ name: Verify Bruce baseline build
 on:
   issues:
     types: [opened]
+  pull_request:
+    types: [reopened]
 
 permissions:
   contents: read
 
 jobs:
   build:
-    if: github.event.issue.title == '[bootstrap] verify Bruce 1.16.1 baseline'
+    if: >-
+      (github.event_name == 'issues' && github.event.issue.title == '[bootstrap] verify Bruce 1.16.1 baseline') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'baseline/bruce-1.16.1')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout baseline
