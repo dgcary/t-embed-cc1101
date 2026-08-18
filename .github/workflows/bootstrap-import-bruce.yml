@@ -41,17 +41,17 @@ jobs:
           echo "Actual upstream:   $actual"
           test "$actual" = "$expected"
 
-      - name: Replace baseline tree with upstream source
+      - name: Replace baseline tree with upstream source except workflows
         shell: bash
         run: |
           set -euo pipefail
           temp_dir="$(mktemp -d)"
-          rsync -a --delete --exclude='.git' upstream-src/ "$temp_dir/"
+          rsync -a --delete --exclude='.git' --exclude='.github/workflows/' upstream-src/ "$temp_dir/"
           find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
           rsync -a "$temp_dir/" ./
           rm -rf "$temp_dir"
 
-      - name: Commit exact source baseline
+      - name: Commit source baseline without workflows
         shell: bash
         run: |
           set -euo pipefail
