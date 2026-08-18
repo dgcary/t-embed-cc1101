@@ -3,6 +3,8 @@ name: Bootstrap Bruce 1.16.1 baseline
 on:
   issues:
     types: [opened]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -10,7 +12,9 @@ permissions:
 
 jobs:
   import-upstream:
-    if: github.event.issue.title == '[bootstrap] import Bruce 1.16.1'
+    if: >-
+      (github.event_name == 'issues' && github.event.issue.title == '[bootstrap] import Bruce 1.16.1') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'baseline/bruce-1.16.1')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target baseline branch
