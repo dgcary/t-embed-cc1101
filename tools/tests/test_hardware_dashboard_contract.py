@@ -31,6 +31,12 @@ class HardwareDashboardContractTest(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertNotIn(token, text)
 
+    def test_pn532_probe_does_not_allocate_on_every_refresh(self):
+        text = PROBE.read_text(encoding="utf-8")
+        self.assertIn("static Adafruit_PN532 nfc(", text)
+        self.assertNotIn("Adafruit_PN532 nfc(PN532_IRQ, PN532_RF_REST);", text)
+        self.assertNotIn("nfc.setInterface(SYS_I2C_SDA, SYS_I2C_SCL);", text)
+
     def test_dashboard_is_t_embed_only_and_first(self):
         header = MENU_H.read_text(encoding="utf-8")
         source = MENU_CPP.read_text(encoding="utf-8")
