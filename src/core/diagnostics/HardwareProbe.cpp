@@ -48,7 +48,7 @@ String compactBytes(uint64_t bytes) {
 bool readI2cU16LE(TwoWire &wire, uint8_t address, uint8_t reg, uint16_t &value) {
     wire.beginTransmission(address);
     wire.write(reg);
-    if (wire.endTransmission(false) != 0) return false;
+    if (wire.endTransmission(true) != 0) return false;
 
     const size_t received = wire.requestFrom(address, static_cast<uint8_t>(2));
     if (received != 2 || wire.available() < 2) return false;
@@ -96,14 +96,21 @@ HardwareItemStatus probeNRF24() {
 }
 
 HardwareItemStatus probePN532() {
+    TwoWire *sysWire = getSysI2CBus();
+    if (sysWire != &Wire) {
+        Serial.println("[Dashboard] PN532 system I2C bus is not Wire");
+        return item(HardwareStatus::Fail, "I2C unavailable");
+    }
+
+    // The Adafruit fork allocates its I2C device in the constructor and has no
+    // matching destructor. Keep one instance for the firmware lifetime so
+    // repeated Dashboard refreshes cannot leak heap memory.
+    static Adafruit_PN532 nfc(PN532_IRQ, PN532_RF_REST, &Wire);
+
     lockSysI2CBus();
-
-    Adafruit_PN532 nfc(PN532_IRQ, PN532_RF_REST);
-    nfc.setInterface(SYS_I2C_SDA, SYS_I2C_SCL);
-    nfc.begin();
-    const uint32_t version = nfc.getFirmwareVersion();
+    const bool begun = nfc.begin();
+    const uint32_t version = begun ? nfc.getFirmwareVersion() : 0;
     if (version != 0) nfc.powerDown();
-
     unlockSysI2CBus();
 
     if (version == 0) Serial.println("[Dashboard] PN532 probe failed");
