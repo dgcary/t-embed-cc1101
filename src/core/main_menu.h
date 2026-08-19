@@ -3,6 +3,9 @@
 
 #include <MenuItemInterface.h>
 
+#ifdef T_EMBED_1101
+#include "menu_items/DashboardMenu.h"
+#endif
 #include "menu_items/BleMenu.h"
 #include "menu_items/ClockMenu.h"
 #include "menu_items/ConfigMenu.h"
@@ -21,6 +24,9 @@
 #include "menu_items/WifiMenu.h"
 class MainMenu {
 public:
+#ifdef T_EMBED_1101
+    DashboardMenu dashboardMenu;
+#endif
     FileMenu fileMenu;
     BleMenu bleMenu;
     ClockMenu clockMenu;
