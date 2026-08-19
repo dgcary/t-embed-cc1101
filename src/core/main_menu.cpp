@@ -5,6 +5,9 @@
 
 MainMenu::MainMenu() {
     _menuItems = {
+#ifdef T_EMBED_1101
+        &dashboardMenu,
+#endif
         &wifiMenu,
         &bleMenu,
         &rfMenu,
