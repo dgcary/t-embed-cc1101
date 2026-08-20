@@ -1,0 +1,20 @@
+name: NetTools Flicker RED Contract
+
+on:
+  pull_request:
+    branches:
+      - feature/nettools-v1
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run NetTools contracts
+        run: python tools/tests/test_nettools_contract.py
