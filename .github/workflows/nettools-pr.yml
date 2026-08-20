@@ -1,0 +1,14 @@
+name: NetTools PR Contract
+
+on:
+  pull_request:
+    branches:
+      - feature/nettools-v1
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run NetTools contract
+        run: python tools/tests/test_nettools_contract.py
