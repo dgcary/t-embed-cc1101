@@ -3,6 +3,7 @@
 #include "core/display.h"
 #include "core/mykeyboard.h"
 #include "core/scrollableTextArea.h"
+#include "core/utils.h"
 #include "core/wifi/wifi_common.h"
 #include "modules/nettools/IcmpProbe.h"
 #include "modules/nettools/NetToolsUtils.h"
