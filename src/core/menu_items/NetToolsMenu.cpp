@@ -58,7 +58,7 @@ String rttText(uint32_t rttUs) {
 
 bool netToolsResultExitPressed() { return check(SelPress) || check(EscPress); }
 
-void updateNetToolsResult(ScrollableTextArea &area, bool force) {
+void updateNetToolsResult(ScrollableTextArea &area) {
 #ifdef HAS_ENCODER
     int32_t rotarySteps = drainRotarySteps();
     if (rotarySteps != 0) {
@@ -85,7 +85,7 @@ void updateNetToolsResult(ScrollableTextArea &area, bool force) {
     if (check(PrevPress) || check(UpPress)) area.scrollUp();
     else if (check(NextPress) || check(DownPress)) area.scrollDown();
 
-    area.draw(force);
+    area.draw();
 }
 
 void showNetToolsResult(ScrollableTextArea &area, bool force = false) {
@@ -95,11 +95,11 @@ void showNetToolsResult(ScrollableTextArea &area, bool force = false) {
     // either Select or Back. This keeps NetTools consistent with the device's
     // normal navigation without changing Bruce's global ScrollableTextArea.
     while (netToolsResultExitPressed()) {
-        updateNetToolsResult(area, force);
+        updateNetToolsResult(area);
         yield();
     }
     while (!netToolsResultExitPressed()) {
-        updateNetToolsResult(area, force);
+        updateNetToolsResult(area);
         yield();
     }
 }
