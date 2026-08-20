@@ -1,0 +1,53 @@
+name: NetTools Build
+
+on:
+  pull_request:
+    branches:
+      - feature/nettools-v1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PlatformIO
+        run: python -m pip install --disable-pip-version-check platformio==6.1.19
+
+      - name: Run NetTools contracts
+        run: python tools/tests/test_nettools_contract.py
+
+      - name: Bootstrap target packages
+        run: pio pkg install -e lilygo-t-embed-cc1101
+
+      - name: Clean target
+        run: pio run -e lilygo-t-embed-cc1101 -t clean
+
+      - name: Build target
+        run: pio run -e lilygo-t-embed-cc1101
+
+      - name: Report binaries and hashes
+        if: success()
+        run: |
+          echo '=== build binaries ==='
+          find .pio/build/lilygo-t-embed-cc1101 -maxdepth 1 -type f -name '*.bin' -printf '%p %s bytes\n' | sort
+          echo '=== SHA-256 ==='
+          find .pio/build/lilygo-t-embed-cc1101 -maxdepth 1 -type f -name '*.bin' -print0 | sort -z | xargs -0 -r sha256sum
+          echo '=== merged binaries elsewhere ==='
+          find . -type f -name 'Bruce-lilygo-t-embed-cc1101.bin' -printf '%p %s bytes\n' -exec sha256sum {} \;
+
+      - name: Upload validated firmware
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nettools-v1-lilygo-t-embed-cc1101
+          path: |
+            .pio/build/lilygo-t-embed-cc1101/*.bin
+            .pio/build/lilygo-t-embed-cc1101/*.elf
+          if-no-files-found: error
+          retention-days: 30
