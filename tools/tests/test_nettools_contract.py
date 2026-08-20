@@ -62,6 +62,15 @@ class NetToolsContractTests(unittest.TestCase):
         self.assertNotIn("area.show(", menu)
         self.assertNotIn("EscPress", global_scroll)
 
+    def test_result_force_draw_is_initial_only(self):
+        menu = read_required("src/core/menu_items/NetToolsMenu.cpp")
+        self.assertIn("void updateNetToolsResult(ScrollableTextArea &area)", menu)
+        self.assertNotIn("void updateNetToolsResult(ScrollableTextArea &area, bool force)", menu)
+        self.assertIn("area.draw(force);", menu)
+        self.assertIn("area.draw();", menu)
+        self.assertGreaterEqual(menu.count("updateNetToolsResult(area);"), 2)
+        self.assertNotIn("updateNetToolsResult(area, force);", menu)
+
     def test_nettools_is_diagnostic_only_and_does_not_patch_existing_attack_modules(self):
         menu = read_required("src/core/menu_items/NetToolsMenu.cpp")
         forbidden = (
