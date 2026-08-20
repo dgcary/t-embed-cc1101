@@ -56,6 +56,54 @@ String rttText(uint32_t rttUs) {
     return String(static_cast<float>(rttUs) / 1000.0f, 2) + " ms";
 }
 
+bool netToolsResultExitPressed() { return check(SelPress) || check(EscPress); }
+
+void updateNetToolsResult(ScrollableTextArea &area, bool force) {
+#ifdef HAS_ENCODER
+    int32_t rotarySteps = drainRotarySteps();
+    if (rotarySteps != 0) {
+        check(PrevPress);
+        check(NextPress);
+        check(UpPress);
+        check(DownPress);
+        while (rotarySteps > 0) {
+            area.scrollUp();
+            --rotarySteps;
+        }
+        while (rotarySteps < 0) {
+            area.scrollDown();
+            ++rotarySteps;
+        }
+        vTaskDelay(4 / portTICK_PERIOD_MS);
+        PrevPress = false;
+        NextPress = false;
+        UpPress = false;
+        DownPress = false;
+    }
+#endif
+
+    if (check(PrevPress) || check(UpPress)) area.scrollUp();
+    else if (check(NextPress) || check(DownPress)) area.scrollDown();
+
+    area.draw(force);
+}
+
+void showNetToolsResult(ScrollableTextArea &area, bool force = false) {
+    area.draw(force);
+
+    // Drain the input that opened/cancelled the result view, then wait for
+    // either Select or Back. This keeps NetTools consistent with the device's
+    // normal navigation without changing Bruce's global ScrollableTextArea.
+    while (netToolsResultExitPressed()) {
+        updateNetToolsResult(area, force);
+        yield();
+    }
+    while (!netToolsResultExitPressed()) {
+        updateNetToolsResult(area, force);
+        yield();
+    }
+}
+
 void showNetworkInfo() {
     if (!ensureConnected()) return;
 
@@ -70,7 +118,7 @@ void showNetworkInfo() {
     area.addLine("MAC: " + WiFi.macAddress());
     area.addLine("RSSI: " + String(WiFi.RSSI()) + " dBm");
     area.addLine("Channel: " + String(WiFi.channel()));
-    area.show();
+    showNetToolsResult(area);
 }
 
 void runPing() {
@@ -140,7 +188,7 @@ void runPing() {
         );
     }
     if (cancelled) area.addLine("Cancelled");
-    area.show(true);
+    showNetToolsResult(area, true);
 }
 
 void runTraceroute() {
@@ -185,7 +233,7 @@ void runTraceroute() {
     if (reached) area.addLine("Reached target");
     else if (cancelled) area.addLine("Cancelled");
     else area.addLine("Max hops reached");
-    area.show(true);
+    showNetToolsResult(area, true);
 }
 
 void drawDiscoveryProgress(uint32_t scanned, uint32_t total, uint32_t up) {
@@ -257,7 +305,7 @@ void runHostDiscovery() {
     area.addLine("--- Responsive hosts ---");
     if (responsive.empty()) area.addLine("None");
     for (const IPAddress &host : responsive) area.addLine(host.toString());
-    area.show(true);
+    showNetToolsResult(area, true);
 }
 
 void drawPortProgress(uint32_t scanned, uint32_t total, uint32_t openCount) {
@@ -290,7 +338,7 @@ void showPortResults(
         if (result.service.length() > 0) line += "  " + result.service;
         area.addLine(line);
     }
-    area.show(true);
+    showNetToolsResult(area, true);
 }
 
 void runPortScanCommon(const String &targetText, const IPAddress &target) {
