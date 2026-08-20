@@ -1,0 +1,14 @@
+name: NetTools Red Contract
+
+on:
+  push:
+    branches:
+      - ci/nettools-red
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run NetTools contract
+        run: python tools/tests/test_nettools_contract.py
