@@ -5,6 +5,7 @@
 
 #ifdef T_EMBED_1101
 #include "menu_items/DashboardMenu.h"
+#include "menu_items/NetToolsMenu.h"
 #endif
 #include "menu_items/BleMenu.h"
 #include "menu_items/ClockMenu.h"
@@ -26,6 +27,7 @@ class MainMenu {
 public:
 #ifdef T_EMBED_1101
     DashboardMenu dashboardMenu;
+    NetToolsMenu netToolsMenu;
 #endif
     FileMenu fileMenu;
     BleMenu bleMenu;
