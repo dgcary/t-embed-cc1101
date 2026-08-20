@@ -52,6 +52,16 @@ class NetToolsContractTests(unittest.TestCase):
         self.assertIn("SO_ERROR", source)
         self.assertIn("lwip_close", source)
 
+    def test_result_views_accept_back_without_global_scrollable_change(self):
+        menu = read_required("src/core/menu_items/NetToolsMenu.cpp")
+        global_scroll = read_required("src/core/scrollableTextArea.cpp")
+        self.assertIn("showNetToolsResult", menu)
+        self.assertIn("check(EscPress)", menu)
+        self.assertIn("check(SelPress)", menu)
+        self.assertGreaterEqual(menu.count("showNetToolsResult(area"), 5)
+        self.assertNotIn("area.show(", menu)
+        self.assertNotIn("EscPress", global_scroll)
+
     def test_nettools_is_diagnostic_only_and_does_not_patch_existing_attack_modules(self):
         menu = read_required("src/core/menu_items/NetToolsMenu.cpp")
         forbidden = (
